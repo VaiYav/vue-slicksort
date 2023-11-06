@@ -1,3 +1,7 @@
+## [2.0.6-alpha.0](https://github.com/VaiYav/vue-slicksort/compare/v2.0.5...v2.0.6-alpha.0) (2023-11-06)
+
+
+
 ## 2.0.5 (2023-11-06)
 
 
