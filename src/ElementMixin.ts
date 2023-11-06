@@ -10,6 +10,14 @@ interface ComponentData {
 export const ElementMixin = defineComponent({
   inject: ['manager'],
   props: {
+    item: {
+      type: Object,
+      required: true,
+    },
+    keyUid: {
+      type: String,
+      default: 'id',
+    },
     index: {
       type: Number,
       required: true,
@@ -57,6 +65,7 @@ export const ElementMixin = defineComponent({
 
       node.sortableInfo = {
         index,
+        uid: this.$props.item[this.$props.keyUid]?.toString(),
         manager: this.manager,
       };
 

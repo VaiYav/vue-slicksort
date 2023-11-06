@@ -4,10 +4,10 @@ import { ref } from 'vue';
 
 const components = {
   setup() {
-    const list = ref([1,2,3]);
+    const list = ref([{ id: 1 }, { id: 2 }, { id: 3 }]);
     return () => <SlickList v-model:list={list.value} data-cy="list">
-      {list.value.map((item, i) => <SlickItem key={item} index={i} data-cy="item">
-        Item {item}
+      {list.value.map((item, i) => <SlickItem key={item} item={item} index={i} data-cy="item">
+        Item {item.id}
       </SlickItem>)}
     </SlickList>;
   },
