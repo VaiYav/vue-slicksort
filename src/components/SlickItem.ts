@@ -9,7 +9,7 @@ export const SlickItem = defineComponent({
       type: Object,
       default: () => ({}),
     },
-    dataKey: {
+    keyUid: {
       type: String,
       default: 'id',
     },
@@ -20,7 +20,7 @@ export const SlickItem = defineComponent({
   },
   render() {
     return h(this.tag, {
-      'uid': this.item[this.dataKey],
+      'uid': this.item[this.keyUid],
     }, this.$slots.default?.());
   },
 });

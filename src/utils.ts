@@ -28,40 +28,33 @@ export function hasOwnProperty<X extends object, Y extends PropertyKey>(
   return !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-export function arrayMove<T>(arr: T[], previousIndex: number, newIndex: number, itemKey: string): (T | undefined)[] {
+export function arrayMove<T>(arr: T[], previousIndex: number, newIndex: number): (T | undefined)[] {
   const array: (T | undefined)[] = arr.slice(0);
-  const previousInd = array.findIndex((item) => item[itemKey].toString() === previousIndex.toString());
-  const newInd = array.findIndex((item) => item[itemKey].toString() === newIndex.toString());
 
-  if (newInd >= array.length) {
-    let k = newInd - array.length;
+  if (newIndex >= array.length) {
+    let k = newIndex - array.length;
     while (k-- + 1) {
       array.push(undefined);
     }
   }
 
-  console.log('previousInd',previousInd);
-  console.log('newInd',newInd);
-  console.log('newIndex',newIndex);
-  array.splice(newInd, 0, array.splice(previousInd, 1)[0]);
+  array.splice(newIndex, 0, array.splice(previousIndex, 1)[0]);
   return array;
 }
 
-export function arrayRemove<T>(arr: T[], previousIndex: number, itemKey: string): T[] {
+export function arrayRemove<T>(arr: T[], previousIndex: number): T[] {
   const array = arr.slice(0);
-  const previousInd = array.findIndex((item) => item[itemKey].toString() === previousIndex.toString());
-  if (previousInd >= array.length) return array;
-  array.splice(previousInd, 1);
+  if (previousIndex >= array.length) return array;
+  array.splice(previousIndex, 1);
   return array;
 }
 
-export function arrayInsert<T>(arr: T[], newIndex: number, value: T, itemKey: string): T[] {
+export function arrayInsert<T>(arr: T[], newIndex: number, value: T): T[] {
   const array = arr.slice(0);
-  const newInd = array.findIndex(item => item[itemKey] === newIndex)
-  if (newInd === array.length) {
+  if (newIndex === array.length) {
     array.push(value);
   } else {
-    array.splice(newInd, 0, value);
+    array.splice(newIndex, 0, value);
   }
   return array;
 }
