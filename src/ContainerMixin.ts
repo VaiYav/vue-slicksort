@@ -479,7 +479,7 @@ export const ContainerMixin = defineComponent({
       const newValue = arrayRemove(this.list, this.index!);
       this.$emit('sort-remove', {
         oldIndex: this.index,
-        oldUid: this.uid
+        oldUid: this.uid,
       });
       this.$emit('update:list', newValue);
       return removed;
