@@ -15,10 +15,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jexordexan/vue-slicksort.git"
+    "url": "https://github.com/VaiYav/vue-slicksort"
   },
   "bugs": {
-    "url": "https://github.com/Jexordexan/vue-slicksort/issues"
+    "url": "https://github.com/VaiYav/vue-slicksort/issues"
   },
   "keywords": [
     "vue",
