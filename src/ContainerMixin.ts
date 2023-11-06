@@ -152,6 +152,13 @@ interface ComponentData extends ComponentProps {
   // Target index for dropping
   newIndex: number | null;
 
+
+  // Starting uid (use last index for drag in operations)
+  uid: number | string | null;
+
+  // Target uid for dropping
+  newUid: number | string | null;
+
   // The node that follows the mouse
   helper: HTMLElement | null;
 
@@ -164,7 +171,7 @@ interface ComponentData extends ComponentProps {
 
 // Export Sortable Container Component Mixin
 export const ContainerMixin = defineComponent({
-  inject: { 
+  inject: {
     SlicksortHub: {
       from: 'SlicksortHub',
       default: null,
@@ -383,10 +390,12 @@ export const ContainerMixin = defineComponent({
         const { getHelperDimensions, helperClass, hideSortableGhost, appendTo } = this.$props;
         const { node } = active;
         const { index } = node.sortableInfo;
+        const dataKey = node.getAttribute('uid');
+        console.log(node.sortableInfo);
         const margin = getElementMargin(node);
 
         const containerBoundingRect = this.container.getBoundingClientRect();
-        const dimensions = getHelperDimensions({ index, node });
+        const dimensions = getHelperDimensions({ index, node, dataKey });
 
         this.node = node;
         this.margin = margin;
@@ -398,8 +407,9 @@ export const ContainerMixin = defineComponent({
         };
         this.boundingClientRect = node.getBoundingClientRect();
         this.containerBoundingRect = containerBoundingRect;
-        this.index = index;
-        this.newIndex = index;
+        console.log('qqq', dataKey);
+        this.index = dataKey;
+        this.newIndex = dataKey;
 
         const clonedNode = cloneNode(node);
 
@@ -442,7 +452,7 @@ export const ContainerMixin = defineComponent({
 
         this.sorting = true;
 
-        this.$emit('sort-start', { event: e, node, index });
+        this.$emit('sort-start', { event: e, node, index, dataKey });
       }
     },
 
@@ -465,21 +475,23 @@ export const ContainerMixin = defineComponent({
     },
 
     handleDropOut() {
-      const removed = this.list[this.index!];
-      const newValue = arrayRemove(this.list, this.index!);
+      const removed = this.list.find(item => item[this.itemKey] === this.index!);
+      const newValue = arrayRemove(this.list, this.index!, this.itemKey);
       this.$emit('sort-remove', {
         oldIndex: this.index,
       });
+      console.log('newValue', newValue);
       this.$emit('update:list', newValue);
       return removed;
     },
 
     handleDropIn(payload: unknown) {
-      const newValue = arrayInsert(this.list, this.newIndex!, payload);
+      const newValue = arrayInsert(this.list, this.newIndex!, payload, this.itemKey);
       this.$emit('sort-insert', {
         newIndex: this.newIndex,
         value: payload,
       });
+      console.log('newValue', newValue);
       this.$emit('update:list', newValue);
       this.handleDragEnd();
     },
@@ -588,7 +600,8 @@ export const ContainerMixin = defineComponent({
       }
 
       const nodes = this.manager.getRefs();
-      this.index = nodes.length;
+      console.log('here');
+      this.index = this.node.getAttribute('uid');
       this.manager.active = { index: this.index };
 
       const containerBoundingRect = this.container.getBoundingClientRect();
@@ -670,7 +683,9 @@ export const ContainerMixin = defineComponent({
             oldIndex: this.index,
             newIndex: this.newIndex,
           });
-          this.$emit('update:list', arrayMove(this.list, this.index!, this.newIndex!));
+          console.log('this.index', this.index);
+          console.log('this.newIndex', this.newIndex);
+          this.$emit('update:list', arrayMove(this.list, this.index!, this.newIndex!, this.itemKey));
         }
 
         this.manager.active = null;
@@ -691,7 +706,8 @@ export const ContainerMixin = defineComponent({
         return Promise.resolve();
       }
 
-      const indexNode = nodes[this.index!].node;
+      const indexNode = nodes.find((ref) => ref.node.getAttribute('uid') === this.node.getAttribute('uid'))!.node;
+
       let targetX = 0;
       let targetY = 0;
 
@@ -714,7 +730,11 @@ export const ContainerMixin = defineComponent({
         targetX = targetOffset.left - sourceOffset.left - scrollDifference.left;
         targetY = targetOffset.top - sourceOffset.top - scrollDifference.top;
       } else {
-        const newIndexNode = nodes[this.newIndex!].node;
+        console.log('this.newIndex', this.newIndex);
+        console.log('this', this);
+        const newIndexNode = nodes.find((ref) => ref.node.getAttribute('uid') === this.newIndex)!.node;
+        console.log('newIndexNode', newIndexNode);
+
         const deltaScroll = {
           left: this.scrollContainer.scrollLeft - this.initialScroll.left + scrollDifference.left,
           top: this.scrollContainer.scrollTop - this.initialScroll.top + scrollDifference.top,
@@ -817,7 +837,8 @@ export const ContainerMixin = defineComponent({
 
       for (let i = 0, len = nodes.length; i < len; i++) {
         const { node } = nodes[i];
-        const index = node.sortableInfo.index;
+        // const index = node.sortableInfo.index;
+        const dataKey = node.getAttribute('uid');
         const width = node.offsetWidth;
         const height = node.offsetHeight;
         const offset = {
@@ -847,7 +868,7 @@ export const ContainerMixin = defineComponent({
         }
 
         // If the node is the one we're currently animating, skip it
-        if (index === this.index) {
+        if (dataKey === this.index) {
           /*
            * With windowing libraries such as `react-virtualized`, the sortableGhost
            * node may change while scrolling down and then back up (or vice-versa),
@@ -866,11 +887,15 @@ export const ContainerMixin = defineComponent({
           node.style['transitionDuration'] = `${transitionDuration}ms`;
         }
 
+        const previousIndex = this.list.findIndex(item => item[this.itemKey].toString() === dataKey.toString());
+        const newIndex = this.list.findIndex(item => item[this.itemKey].toString() === this.index.toString()!);
+
+
         if (this._axis.x) {
           if (this._axis.y) {
             // Calculations for a grid setup
             if (
-              index < this.index! &&
+              previousIndex < newIndex! &&
               ((sortingOffset.left + scrollDifference.left - offset.width <= edgeOffset.left &&
                 sortingOffset.top + scrollDifference.top <= edgeOffset.top + offset.height) ||
                 sortingOffset.top + scrollDifference.top + offset.height <= edgeOffset.top)
@@ -886,10 +911,10 @@ export const ContainerMixin = defineComponent({
                 translate.y = nextNode.edgeOffset!.top - edgeOffset.top;
               }
               if (this.newIndex === null) {
-                this.newIndex = index;
+                this.newIndex = dataKey;
               }
             } else if (
-              index > this.index! &&
+              previousIndex > newIndex! &&
               ((sortingOffset.left + scrollDifference.left + offset.width >= edgeOffset.left &&
                 sortingOffset.top + scrollDifference.top + offset.height >= edgeOffset.top) ||
                 sortingOffset.top + scrollDifference.top + offset.height >= edgeOffset.top + height)
@@ -904,33 +929,34 @@ export const ContainerMixin = defineComponent({
                 translate.x = prevNode.edgeOffset!.left - edgeOffset.left;
                 translate.y = prevNode.edgeOffset!.top - edgeOffset.top;
               }
-              this.newIndex = index;
+              this.newIndex = dataKey;
             }
           } else {
-            if (index > this.index! && sortingOffset.left + scrollDifference.left + offset.width >= edgeOffset.left) {
+            if (previousIndex > newIndex! && sortingOffset.left + scrollDifference.left + offset.width >= edgeOffset.left) {
               translate.x = -(this.width + this.marginOffset.x);
-              this.newIndex = index;
+              this.newIndex = dataKey;
             } else if (
-              index < this.index! &&
+              previousIndex < this.index! &&
               sortingOffset.left + scrollDifference.left <= edgeOffset.left + offset.width
             ) {
               translate.x = this.width + this.marginOffset.x;
-              if (this.newIndex == null) {
-                this.newIndex = index;
+              if (newIndex == null) {
+                this.newIndex = dataKey;
               }
             }
           }
         } else if (this._axis.y) {
-          if (index > this.index! && sortingOffset.top + scrollDifference.top + offset.height >= edgeOffset.top) {
+          if (previousIndex > newIndex! && sortingOffset.top + scrollDifference.top + offset.height >= edgeOffset.top) {
             translate.y = -(this.height + this.marginOffset.y);
-            this.newIndex = index;
+
+            this.newIndex = dataKey;
           } else if (
-            index < this.index! &&
+            previousIndex < newIndex! &&
             sortingOffset.top + scrollDifference.top <= edgeOffset.top + offset.height
           ) {
             translate.y = this.height + this.marginOffset.y;
             if (this.newIndex == null) {
-              this.newIndex = index;
+              this.newIndex = dataKey;
             }
           }
         }
