@@ -3,6 +3,8 @@ import { TopLeft } from './utils';
 export interface SortableNode extends HTMLElement {
   sortableInfo: {
     index: number;
+    id: number;
+    uid: number;
     manager: Manager;
   };
   sortableHandle?: boolean;
@@ -11,6 +13,7 @@ export interface SortableNode extends HTMLElement {
 export interface ItemRef {
   node: SortableNode;
   index?: number;
+  uid?: number | string | null;
   edgeOffset?: TopLeft | null;
 }
 
