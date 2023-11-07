@@ -15,10 +15,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/oboard.dev/vue-oboard-slicksort"
+    "url": "https://github.com/VaiYav/vue-slicksort"
   },
   "bugs": {
-    "url": "https://gitlab.com/oboard.dev/vue-oboard-slicksort/issues"
+    "url": "https://github.com/VaiYav/vue-slicksort/issues"
   },
   "keywords": [
     "vue",
